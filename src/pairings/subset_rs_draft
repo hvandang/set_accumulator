@@ -1,0 +1,48 @@
+//! this file is extension part of the pointproofs.
+//! It defines APIs for constructing and updating set commitments.
+extern crate plum;
+
+use plum::StandardBloomFilter;
+
+use pairings::*;
+
+impl SetCommit {
+    /// generate a new set commitment.
+    ///     * input: prover parameter set
+    ///     * input: a  of n values
+    ///     * output: a commitment
+    ///     * error: invalid ciphersuite/parameters
+    /// note that if the #values does not match the parameter n,
+    /// an error will be returned.
+    /// if one were to generate a commitment for a vector of length
+    /// less than n, then the caller should pad the vector.
+    /// In this scenario, the caller should define the right
+    /// format for padding.
+    pub fn new<Blob: AsRef<[u8]>>(
+        prover_params: &ProverParams,
+        values: &[Blob],
+    ) -> Result<Self, String> {
+        let mut bloom = StandardBloomFilter::<str>::new(items_count, fp_rate);
+    
+	    for item in vec {
+	    	println!("Item value: {}.", values[i]);
+	    	bloom.insert(values[i]);
+		}
+		
+		println!("Bloom vector size: {}",bloom.optimal_m);
+	    println!("Bloom vector: {:?}",bloom.bitmap);
+	    let mut init_values: Vec<Vec<u8>> = Vec::with_capacity(bloom.optimal_m);
+	    for i in 0..bloom.optimal_m {
+	    	let x = bloom.bitmap[i] as i32;
+	    	let y = format!("{}", x);
+	    	let v = y.into_bytes();
+	    	//println!( "{:#?}", v );
+	        init_values.push(v);
+	    }
+	    println!( "init values  {:?}", init_values );
+	    // generate the commitment, and (de)serialize it
+    	let com = Commitment::new(&prover_params, &init_values).unwrap();
+    	
+    	return com;
+    }
+}
