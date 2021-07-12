@@ -8,14 +8,29 @@ use pointproofs::pairings::*;
 use plum::StandardBloomFilter;
 use itertools::Itertools;
 
+//read file line by line
+//use std::fs::File;
+//use std::io::{self, BufRead};
+//use std::path::Path;
+
+//read csv
+//extern crate csv;
+//use csv::Error;
+
+//use std::env;
+//use std::error::Error;
+//use std::ffi::OsString;
+//use std::fs::File;
+//use std::process;
+
 fn setcommit(
 	prover_params: &ProverParams,
-	values: Vec<&str>,
+	values: Vec<String>,
 	bloom: &mut plum::StandardBloomFilter<str>
 	)-> (Vec<Vec<u8>>,Commitment) {
     for i in 0..values.len() {
     	println!("Item value: {}.", values[i]);
-     	bloom.insert(values[i]);
+     	bloom.insert(&values[i]);
     }
 		
 	println!("Bloom vector size: {}",bloom.optimal_m);	    
@@ -120,11 +135,102 @@ fn setverify(
     return res;
 }
 
-
-fn main() {
+/*
+fn testcommit(n: u8, S: &mut [String]) {
     let items_count = 10; //1_000_000;
     let fp_rate = 0.01;
-	let vec = vec!["item1", "item2", "item3", "item4"];
+    let mut bloom = StandardBloomFilter::<str>::new(items_count, fp_rate);
+
+    let n = bloom.optimal_m;//16usize;
+    let seed = "This is a very very very very very very long Seed";
+    // generate the parameters, and performs pre_computation
+    let (mut prover_params, verifier_params) =
+        //paramgen_from_seed("This is Leo's Favourite very very long Seed", 0, n).unwrap();
+        paramgen_from_seed(seed, 0, n).unwrap();
+    prover_params.precomp_256(); // precomp_256, or nothing, as you wish
+
+    let (init_values,old_com) = setcommit(&prover_params,vec,&mut bloom);
+
+    let mut old_commitment_bytes: Vec<u8> = vec![];
+    assert!(old_com.serialize(&mut old_commitment_bytes, true).is_ok());
+    assert_eq!(
+        old_com,
+        Commitment::deserialize(&mut old_commitment_bytes[..].as_ref(), true).unwrap()
+    );
+
+    println!("\nCommitment:  {:02x?}\n", old_commitment_bytes);
+    println!("Bloom filter array: {:?}", init_values);
+
+    return old_commitment_bytes;
+}
+*/
+
+/*
+//https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html
+// The output is wrapped in a Result to allow matching on errors
+// Returns an Iterator to the Reader of the lines of the file.
+fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+where P: AsRef<Path>, {
+    let file = File::open(filename)?;
+    Ok(io::BufReader::new(file).lines())
+}
+
+//https://doc.rust-lang.org/rust-by-example/std_misc/file/read_lines.html
+fn read_file(filename: &str){
+    // File hosts must exist in current path before this produces output
+    if let Ok(lines) = read_lines(filename) {
+        // Consumes the iterator, returns an (Optional) String
+        for line in lines {
+            if let Ok(ip) = line {
+                println!("{}", ip);
+            }
+        }
+    }
+}*/
+
+//https://docs.rs/csv/1.0.0/csv/tutorial/index.html#reading-csv
+/*fn read_csv(file_path: &str){
+    //let file = File::open(file_path);
+    let csv = "year,make,model,description
+        1948,Porsche,356,Luxury sports car
+        1967,Ford,Mustang fastback 1967,American car";
+
+    //let mut rdr = csv::Reader::from_reader(csv.as_bytes());
+    let rdr = [1,2];
+    for result in rdr.records() {
+        let record = result;
+        println!("{:?}", record);
+    }
+}*/
+
+//https://dev.to/0xbf/day10-read-csv-with-csv-crate-100dayofrust-158f
+fn read_csv(filepath:&str)-> Vec<String> {
+    let mut reader = csv::ReaderBuilder::new()
+                        .has_headers(false)
+                        .from_path(filepath)
+                        .expect("Cannot read file");
+    let mut vec = Vec::new();
+    //let mut total_score = 0;
+    //let mut total_count = 0;
+    for record in reader.records() {
+        //total_score += record.unwrap()[0].trim().parse::<i32>().unwrap();
+        //total_count += 1;
+        let x: String=record.unwrap()[0].to_owned();
+        vec.push(x);
+    }
+    //println!("Total score: {} Avg score: {}",
+    //         total_score,
+    //         (total_score as f32) / (total_count as f32));
+    return vec;
+}
+
+fn main() {
+    let vec=read_csv("../../data/input.csv");
+    
+    let items_count = 10; //1_000_000;
+    let fp_rate = 0.01;
+	//let vec = vec!["item1", "item2", "item3", "item4"];
+
 
     let mut bloom = StandardBloomFilter::<str>::new(items_count, fp_rate);
     
@@ -140,10 +246,11 @@ fn main() {
     
     let mut old_commitment_bytes: Vec<u8> = vec![];
     assert!(old_com.serialize(&mut old_commitment_bytes, true).is_ok());
+    /*
     assert_eq!(
         old_com,
         Commitment::deserialize(&mut old_commitment_bytes[..].as_ref(), true).unwrap()
-    );
+    );*/
 
     println!("\nCommitment:  {:02x?}\n", old_commitment_bytes);
     println!("Bloom filter array: {:?}", init_values);
@@ -162,7 +269,7 @@ fn main() {
         agg_proof);
 	println!("result of verification:{}",res);
 
-	/*let check_item="item1";
+    /*let check_item="item1";
 	let agg_proof=setprove(&prover_params, 
 		&init_values, 
 		check_item,
@@ -181,170 +288,3 @@ fn main() {
 
 }
 
-/*fn main() {
-	//setcommit();
-    let items_count = 10; //1_000_000;
-    let fp_rate = 0.01;
-	let vec = vec!["item1", "item2", "item3", "item4"];
-
-    let mut bloom = StandardBloomFilter::<str>::new(items_count, fp_rate);
-    
-   /* for item in vec {
-    	println!("Item value: {}.", item);
-    	bloom.insert(item);
-	}
-    
-    let r1=bloom.contains("item1"); /* true */
-    println!("{}",r1);
-    let r2=bloom.contains("item2"); /* false */
-    println!("{}",r2);
-    
-    println!("Bloom vector size: {}",bloom.optimal_m);
-    println!("Bloom vector: {:?}",bloom.bitmap);
-    let mut init_values1: Vec<Vec<u8>> = Vec::with_capacity(bloom.optimal_m);
-    for i in 0..bloom.optimal_m {
-    	let x = bloom.bitmap[i] as i32;
-    	let y = format!("{}", x);
-    	let v = y.into_bytes();
-    	//println!( "{:#?}", v );
-        init_values1.push(v);
-    }
-    println!( "init values 1 {:?}", init_values1 );
-    
-    let idx = bloom.item_to_indexes("item5");
-    println!( "indexes {:?}", idx );
-    let n_proof = idx.len();
-    println!("number of indexes:{}",n_proof);*/
-    
-    let n = bloom.optimal_m;//16usize;
-    let update_index = n / 2;
-    let seed = "This is a very very very very very very long Seed";
-
-    // generate the parameters, and performs pre_computation
-    let (mut prover_params, verifier_params) =
-        //paramgen_from_seed("This is Leo's Favourite very very long Seed", 0, n).unwrap();
-        paramgen_from_seed(seed, 0, n).unwrap();
-    prover_params.precomp_256(); // precomp_256, or nothing, as you wish
-
-    // initiate the data to commit
-    let mut init_values: Vec<Vec<u8>> = Vec::with_capacity(n);
-    println!("Commiting to the following {} strings", n);
-    for i in 0..n {
-        let s = format!("this is the message number {}", i);
-        println!("{}", s);
-        init_values.push(s.into_bytes());
-    }
-   	println!( "init values {:#?}", init_values );
-
-    // generate the commitment, and (de)serialize it
-   // let old_com = Commitment::new(&prover_params, &init_values).unwrap();
-    
-    //let old_com = Commitment::new(&prover_params, &init_values1).unwrap();
-    let (init_values2,old_com) = setcommit(&prover_params,vec,items_count,fp_rate);
-    
-    let mut old_commitment_bytes: Vec<u8> = vec![];
-    assert!(old_com.serialize(&mut old_commitment_bytes, true).is_ok());
-    assert_eq!(
-        old_com,
-        Commitment::deserialize(&mut old_commitment_bytes[..].as_ref(), true).unwrap()
-    );
-
-    println!("\nCommitment:  {:02x?}\n", old_commitment_bytes);
-    println!("Bloom filter array: {:?}", init_values2);
-
-	let check_item="item1";
-	let proofs: Vec<Proof> =setprove(&prover_params, &init_values2, check_item, items_count, fp_rate);
-	println!("Proofs: {:?}", proofs);
-    
-	/*let mut proofs: Vec<Proof> = Vec::with_capacity(n_proof);
-    for i in 0..n_proof {
-        proofs.push(Proof::new(&prover_params, &init_values1, idx[i]).unwrap());
-        let mut proof_bytes: Vec<u8> = vec![];
-        assert!(proofs[i].serialize(&mut proof_bytes, true).is_ok());
-        println!("Old Proof {}: {:02x?}", i, proof_bytes);
-        assert_eq!(
-            proofs[i],
-            Proof::deserialize(&mut proof_bytes[..].as_ref(), true).unwrap()
-        );
-        assert!(proofs[i].verify(&verifier_params, &old_com, [49], idx[i]));
-    }*/
-    
-/*    // generate the proof, (de)serialize it, and verify it
-    let mut proofs: Vec<Proof> = Vec::with_capacity(n);
-    for i in 0..n {
-        proofs.push(Proof::new(&prover_params, &init_values, i).unwrap());
-        let mut proof_bytes: Vec<u8> = vec![];
-        assert!(proofs[i].serialize(&mut proof_bytes, true).is_ok());
-        println!("Old Proof {}: {:02x?}", i, proof_bytes);
-        assert_eq!(
-            proofs[i],
-            Proof::deserialize(&mut proof_bytes[..].as_ref(), true).unwrap()
-        );
-        assert!(proofs[i].verify(&verifier_params, &old_com, &init_values[i], i));
-    }
-
-    let new_value = format!("\"this is new message number {}\"", update_index);
-    println!("\nUpdating string {} to {}\n", update_index, new_value);
-
-    // update the commitment to the new value, and (de)serialize it
-    let mut new_com = old_com;
-    new_com
-        .update(
-            &prover_params,
-            update_index,
-            &init_values[update_index][..].as_ref(),
-            &new_value.as_ref(),
-        )
-        .unwrap();
-    let mut new_commitment_bytes: Vec<u8> = vec![];
-    assert!(new_com.serialize(&mut new_commitment_bytes, true).is_ok());
-    assert_eq!(
-        new_com,
-        Commitment::deserialize(&mut new_commitment_bytes[..].as_ref(), true).unwrap()
-    );
-
-    // verifies new proof against new commitment and new value
-    assert!(proofs[update_index].verify(&verifier_params, &new_com, &new_value, update_index));
-
-    // verifies new proof against new commitment and old value -- must fail
-    assert!(!proofs[update_index].verify(
-        &verifier_params,
-        &new_com,
-        &init_values[update_index],
-        update_index
-    ));
-
-    for i in 0..n {
-        // verifies the old proofs against new commitment -- must fail
-        if i != update_index {
-            assert!(!proofs[i].verify(&verifier_params, &new_com, &init_values[i], i));
-        }
-
-        // update the proofs to the new value
-        assert!(proofs[i]
-            .update(
-                &prover_params,
-                i,
-                update_index,
-                &init_values[update_index][..].as_ref(),
-                &new_value.as_ref(),
-            )
-            .is_ok());
-        // the updated proof should pass verification against the new commitment
-        if i != update_index {
-            assert!(proofs[i].verify(&verifier_params, &new_com, &init_values[i], i));
-        }
-
-        // (de)serialization
-        let mut proof_bytes: Vec<u8> = vec![];
-        assert!(proofs[i].serialize(&mut proof_bytes, true).is_ok());
-        println!("New Proof {}: {:02x?}", i, proof_bytes);
-        assert_eq!(
-            proofs[i],
-            Proof::deserialize(&mut proof_bytes[..].as_ref(), true).unwrap()
-        );
-    }
-
-    // finished
-    println!("\nNi hao, Algorand");*/
-}*/
