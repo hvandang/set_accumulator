@@ -24,6 +24,7 @@
   pointproofs-paramgen = { git = "https://github.com/algorand/pointproofs-paramgen"}
   plum = { path = "../plum" } # import library plum from plum folder
   itertools = "0.9.0" # import itertools to remove duplicate in vector
+  csv = "1.1"
 
 [features]
   # group switched: PointproofsG1 is in fact G2 in BLS-group
