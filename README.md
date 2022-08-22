@@ -20,7 +20,7 @@ CREDIT: http://patorjk.com/software/taag
 # Pointproofs
 [![Build Status](https://travis-ci.com/algorand/pointproofs.svg?branch=master)](https://travis-ci.com/algorand/pointproofs)
 
-This implementation is based on Algorand's Pointproofs at https://github.com/algorand/pointproofs
+This implementation is based on Algorand's Pointproofs at https://github.com/algorand/pointproofs and Bloom filter implementation at https://github.com/distrentic/plum.git
 
 This is Algorand's implementation of __Pointproofs: Aggregating Proofs for Multiple Vector Commitments__.
 This implementation uses bls12-381 curve.
