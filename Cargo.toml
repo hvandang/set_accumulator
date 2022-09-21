@@ -17,12 +17,12 @@
 [dependencies]
 #  ff = { version = "0.6.3", git = "https://github.com/algorand/ff-zeroize", features = ["derive"]}
   ff-zeroize = { version = "0.6.3", features = ["derive"]}
-  pairing-plus = { git = "https://github.com/algorand/pairing-plus"}
+  pairing-plus = { git = "https://github.com/algorand/pairing-plus", branch="master"}
   sha2 = "0.8"
   libc = { version = "0.2", features = ["align"] }
   bigint = { version = "4", default-features = false }
   pointproofs-paramgen = { git = "https://github.com/algorand/pointproofs-paramgen"}
-  plum = { path = "../plum" } # import library plum from plum folder
+  plum = { path = "./plum" } # import library plum from plum folder
   itertools = "0.9.0" # import itertools to remove duplicate in vector
   csv = "1.1"
 
@@ -39,8 +39,8 @@
   bencher = "0.1.5"
   criterion = "0.2.11"
   rand = "0.5"
-  rand_core = ""
-  rand_xorshift = ""
+  rand_core = "*"
+  rand_xorshift = "*"
 
 ## A set of benchmarks are available under the benches folder
 ## Some are quite slow

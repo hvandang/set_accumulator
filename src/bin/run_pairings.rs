@@ -225,12 +225,15 @@ fn read_csv(filepath:&str)-> Vec<String> {
 }
 
 fn main() {
-    let vec=read_csv("../../data/input.csv");
+    // let vec=read_csv("../../data/input.csv");
     
     let items_count = 10; //1_000_000;
     let fp_rate = 0.01;
-	//let vec = vec!["item1", "item2", "item3", "item4"];
-
+	let mut vec: Vec<String> = Vec::new();
+    for i in 0..10 {
+        vec.push(String::from("item"));
+        vec[i].push_str(&i.to_string());
+    }
 
     let mut bloom = StandardBloomFilter::<str>::new(items_count, fp_rate);
     
